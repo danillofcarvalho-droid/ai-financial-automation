@@ -38,8 +38,9 @@ O projeto é dividido em dois fluxos principais de automação:
 
 ### **Estrutura do Repositório**
 
-* **/blueprints**: Arquivos JSON para importação dos cenários no Make.com.
-* **/sql**: Script de criação da tabela controle_gastos no PostgreSQL.
+* **/blueprints**: Arquivos JSON para importação dos cenários no Make.com;
+* **/sql**: Script de criação da tabela controle_gastos no PostgreSQL;
+* **/img**: Imagens do funcionamento da automação;
 * **README.md**: Documentação técnica do projeto.
 
 ---
