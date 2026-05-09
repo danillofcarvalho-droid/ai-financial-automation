@@ -1,19 +1,19 @@
 {
-    "name": "Integration Webhooks, PostgreSQL",
+    "name": "Integration Webhooks",
     "flow": [
         {
             "id": 1,
             "module": "gateway:CustomWebHook",
             "version": 1,
             "parameters": {
-                "hook": 2089094,
+                "hook": 2264519,
                 "maxResults": 1
             },
             "mapper": {},
             "metadata": {
                 "designer": {
-                    "x": 0,
-                    "y": 0
+                    "x": -4,
+                    "y": -5
                 },
                 "restore": {
                     "parameters": {
@@ -21,7 +21,7 @@
                             "data": {
                                 "editable": "true"
                             },
-                            "label": "Gastos-cartao"
+                            "label": "gatilho compras cartão"
                         }
                     }
                 },
@@ -41,13 +41,12 @@
             }
         },
         {
-            "id": 6,
-            "module": "gemini-ai:createACompletionGeminiPro",
+            "id": 7,
+            "module": "gemini-ai:extractStructuredData",
             "version": 1,
             "parameters": {
                 "__IMTCONN__": 8125545
             },
-            "filter": null,
             "mapper": {
                 "model": "gemini-2.5-flash",
                 "contents": [
@@ -55,28 +54,43 @@
                         "role": "user",
                         "parts": [
                             {
-                                "text": "{{1.categoria}} {{1.descricao}}",
+                                "text": "Analise esta notificação de compra e extraia categoria, valor e loja.\r\n\r\nNotificação:\r\n{{1.value}}\r\nRegras:\r\n- categoria deve ser apenas uma destas: Alimentação, Transporte, Lazer, Saúde, Educação, Moradia, Compras, Outros\r\n- valor deve ser numérico\r\n- loja deve ser o nome do estabelecimento\r\n- Se aparecer padaria, mercado, supermercado, restaurante, lanchonete ou delivery, use Alimentação\r\n- Se aparecer posto, uber, 99, pedágio, estacionamento ou locadora, use Transporte\r\n- Se aparecer farmácia, clínica, hospital ou laboratório, use Saúde\r\n- Se não tiver certeza, use Outros\r\n- Se não encontrar valor, use 0\r\n- Se não encontrar loja, use Desconhecido\r\n",
                                 "type": "text"
                             }
                         ]
                     }
                 ],
+                "responseSchema": [
+                    {
+                        "type": "string",
+                        "array": false,
+                        "required": true,
+                        "description": "Categoria da compra. Deve ser apenas uma destas: Alimentação, Transporte, Lazer, Saúde, Educação, Moradia, Compras, Outros.\r\n",
+                        "property_name": "categoria"
+                    },
+                    {
+                        "type": "number",
+                        "array": false,
+                        "required": true,
+                        "description": "Valor numérico da compra, sem R$, usando número decimal.",
+                        "property_name": "valor"
+                    },
+                    {
+                        "type": "string",
+                        "array": false,
+                        "required": true,
+                        "description": "Nome do estabelecimento da compra.",
+                        "property_name": "loja"
+                    }
+                ],
                 "generationConfig": {
-                    "imageConfig": {},
                     "thinkingConfig": {}
-                },
-                "system_instruction": {
-                    "parts": [
-                        {
-                            "text": "Você é um assistente financeiro especializado em categorização de gastos. Sua única tarefa é ler uma descrição e uma categoria sugerida e retornar APENAS uma das categorias permitidas: [Alimentação, Transporte, Lazer, Saúde, Moradia ou outros que não se encaixam nessas categorias]. Não escreva frases, explicações ou pontuação. Retorne apenas a palavra exata."
-                        }
-                    ]
                 }
             },
             "metadata": {
                 "designer": {
-                    "x": 455,
-                    "y": -68
+                    "x": 531,
+                    "y": -78
                 },
                 "restore": {
                     "expect": {
@@ -104,31 +118,291 @@
                                         ]
                                     }
                                 }
-                            ],
-                            "collapsed": true
+                            ]
                         },
-                        "url_context": {
-                            "mode": "chose"
-                        },
-                        "code_execution": {
-                            "mode": "chose"
-                        },
-                        "safetySettings": {
-                            "mode": "chose"
+                        "responseSchema": {
+                            "mode": "chose",
+                            "items": [
+                                {
+                                    "type": {
+                                        "mode": "chose",
+                                        "label": "String",
+                                        "nested": [
+                                            {
+                                                "help": null,
+                                                "name": "property_name",
+                                                "spec": null,
+                                                "type": "text",
+                                                "label": "Property Name",
+                                                "options": null,
+                                                "required": true
+                                            },
+                                            {
+                                                "help": null,
+                                                "name": "description",
+                                                "spec": null,
+                                                "type": "text",
+                                                "label": "Description",
+                                                "options": null,
+                                                "required": false
+                                            },
+                                            {
+                                                "help": "The format is not being validated post generation. Add guidance in the prompt and/or property description.",
+                                                "name": "format",
+                                                "spec": null,
+                                                "type": "select",
+                                                "label": "Format",
+                                                "options": [
+                                                    {
+                                                        "label": "Date-Time",
+                                                        "value": "date-time"
+                                                    },
+                                                    {
+                                                        "label": "Date",
+                                                        "value": "date"
+                                                    },
+                                                    {
+                                                        "label": "Time",
+                                                        "value": "time"
+                                                    },
+                                                    {
+                                                        "label": "Email",
+                                                        "value": "email"
+                                                    },
+                                                    {
+                                                        "label": "Hostname",
+                                                        "value": "hostname"
+                                                    },
+                                                    {
+                                                        "label": "IPv4",
+                                                        "value": "ipv4"
+                                                    },
+                                                    {
+                                                        "label": "IPv6",
+                                                        "value": "ipv6"
+                                                    },
+                                                    {
+                                                        "label": "URI",
+                                                        "value": "uri"
+                                                    },
+                                                    {
+                                                        "label": "UUID",
+                                                        "value": "uuid"
+                                                    },
+                                                    {
+                                                        "label": "Regex",
+                                                        "value": "regex"
+                                                    }
+                                                ],
+                                                "required": null
+                                            },
+                                            {
+                                                "help": null,
+                                                "name": "required",
+                                                "spec": null,
+                                                "type": "boolean",
+                                                "label": "Required Property?",
+                                                "options": null,
+                                                "required": null
+                                            },
+                                            {
+                                                "help": null,
+                                                "name": "array",
+                                                "spec": null,
+                                                "type": "boolean",
+                                                "label": "Make property an array?",
+                                                "options": null,
+                                                "required": null
+                                            }
+                                        ]
+                                    },
+                                    "array": {
+                                        "mode": "chose"
+                                    },
+                                    "format": {
+                                        "mode": "chose",
+                                        "label": "Empty"
+                                    },
+                                    "required": {
+                                        "mode": "chose"
+                                    }
+                                },
+                                {
+                                    "type": {
+                                        "mode": "chose",
+                                        "label": "Number",
+                                        "nested": [
+                                            {
+                                                "help": null,
+                                                "name": "property_name",
+                                                "spec": null,
+                                                "type": "text",
+                                                "label": "Property Name",
+                                                "options": null,
+                                                "required": true
+                                            },
+                                            {
+                                                "help": null,
+                                                "name": "description",
+                                                "spec": null,
+                                                "type": "text",
+                                                "label": "Description",
+                                                "options": null,
+                                                "required": false
+                                            },
+                                            {
+                                                "help": null,
+                                                "name": "minimum",
+                                                "spec": null,
+                                                "type": "number",
+                                                "label": "Minimum Value",
+                                                "options": null,
+                                                "required": null
+                                            },
+                                            {
+                                                "help": null,
+                                                "name": "maximum",
+                                                "spec": null,
+                                                "type": "number",
+                                                "label": "Maximum Value",
+                                                "options": null,
+                                                "required": null
+                                            },
+                                            {
+                                                "help": null,
+                                                "name": "required",
+                                                "spec": null,
+                                                "type": "boolean",
+                                                "label": "Required Property?",
+                                                "options": null,
+                                                "required": null
+                                            },
+                                            {
+                                                "help": null,
+                                                "name": "array",
+                                                "spec": null,
+                                                "type": "boolean",
+                                                "label": "Make property an array?",
+                                                "options": null,
+                                                "required": null
+                                            }
+                                        ]
+                                    },
+                                    "array": {
+                                        "mode": "chose"
+                                    },
+                                    "required": {
+                                        "mode": "chose"
+                                    }
+                                },
+                                {
+                                    "type": {
+                                        "mode": "chose",
+                                        "label": "String",
+                                        "nested": [
+                                            {
+                                                "help": null,
+                                                "name": "property_name",
+                                                "spec": null,
+                                                "type": "text",
+                                                "label": "Property Name",
+                                                "options": null,
+                                                "required": true
+                                            },
+                                            {
+                                                "help": null,
+                                                "name": "description",
+                                                "spec": null,
+                                                "type": "text",
+                                                "label": "Description",
+                                                "options": null,
+                                                "required": false
+                                            },
+                                            {
+                                                "help": "The format is not being validated post generation. Add guidance in the prompt and/or property description.",
+                                                "name": "format",
+                                                "spec": null,
+                                                "type": "select",
+                                                "label": "Format",
+                                                "options": [
+                                                    {
+                                                        "label": "Date-Time",
+                                                        "value": "date-time"
+                                                    },
+                                                    {
+                                                        "label": "Date",
+                                                        "value": "date"
+                                                    },
+                                                    {
+                                                        "label": "Time",
+                                                        "value": "time"
+                                                    },
+                                                    {
+                                                        "label": "Email",
+                                                        "value": "email"
+                                                    },
+                                                    {
+                                                        "label": "Hostname",
+                                                        "value": "hostname"
+                                                    },
+                                                    {
+                                                        "label": "IPv4",
+                                                        "value": "ipv4"
+                                                    },
+                                                    {
+                                                        "label": "IPv6",
+                                                        "value": "ipv6"
+                                                    },
+                                                    {
+                                                        "label": "URI",
+                                                        "value": "uri"
+                                                    },
+                                                    {
+                                                        "label": "UUID",
+                                                        "value": "uuid"
+                                                    },
+                                                    {
+                                                        "label": "Regex",
+                                                        "value": "regex"
+                                                    }
+                                                ],
+                                                "required": null
+                                            },
+                                            {
+                                                "help": null,
+                                                "name": "required",
+                                                "spec": null,
+                                                "type": "boolean",
+                                                "label": "Required Property?",
+                                                "options": null,
+                                                "required": null
+                                            },
+                                            {
+                                                "help": null,
+                                                "name": "array",
+                                                "spec": null,
+                                                "type": "boolean",
+                                                "label": "Make property an array?",
+                                                "options": null,
+                                                "required": null
+                                            }
+                                        ]
+                                    },
+                                    "array": {
+                                        "mode": "chose"
+                                    },
+                                    "format": {
+                                        "mode": "chose",
+                                        "label": "Empty"
+                                    },
+                                    "required": {
+                                        "mode": "chose"
+                                    }
+                                }
+                            ]
                         },
                         "generationConfig": {
                             "nested": {
-                                "imageConfig": {
-                                    "nested": {
-                                        "imageSize": {
-                                            "mode": "chose",
-                                            "label": "Empty"
-                                        }
-                                    }
-                                },
-                                "stopSequences": {
-                                    "mode": "chose"
-                                },
                                 "thinkingConfig": {
                                     "nested": {
                                         "thinking_level": {
@@ -143,37 +417,8 @@
                                 "mediaResolution": {
                                     "mode": "chose",
                                     "label": "Empty"
-                                },
-                                "responseMimeType": {
-                                    "mode": "chose",
-                                    "label": "Empty"
-                                },
-                                "responseModalities": {
-                                    "mode": "chose"
                                 }
                             }
-                        },
-                        "system_instruction": {
-                            "nested": {
-                                "parts": {
-                                    "mode": "chose",
-                                    "items": [
-                                        null
-                                    ]
-                                }
-                            }
-                        },
-                        "google_maps_context": {
-                            "mode": "chose"
-                        },
-                        "google_search_context": {
-                            "mode": "chose"
-                        },
-                        "file_search_store_context": {
-                            "mode": "chose"
-                        },
-                        "function_declarations_context": {
-                            "mode": "chose"
                         }
                     },
                     "parameters": {
@@ -265,71 +510,6 @@
                                                         "required": false
                                                     }
                                                 ]
-                                            },
-                                            {
-                                                "label": "Function Call",
-                                                "value": "functionCall",
-                                                "nested": [
-                                                    {
-                                                        "name": "functionCall",
-                                                        "spec": [
-                                                            {
-                                                                "help": "The name of the function to call.",
-                                                                "name": "name",
-                                                                "type": "text",
-                                                                "label": "Name",
-                                                                "required": true,
-                                                                "validate": {
-                                                                    "max": 64
-                                                                }
-                                                            },
-                                                            {
-                                                                "help": "The function parameters and values in JSON object format.",
-                                                                "name": "args",
-                                                                "type": "json",
-                                                                "label": "Arguments"
-                                                            },
-                                                            {
-                                                                "help": "The unique ID of the function call.",
-                                                                "name": "id",
-                                                                "type": "text",
-                                                                "label": "Function Call ID"
-                                                            }
-                                                        ],
-                                                        "type": "collection",
-                                                        "label": "Function Call"
-                                                    }
-                                                ]
-                                            },
-                                            {
-                                                "label": "Function Response",
-                                                "value": "functionResponse",
-                                                "nested": [
-                                                    {
-                                                        "name": "functionResponse",
-                                                        "spec": [
-                                                            {
-                                                                "help": "The name of the function to call.",
-                                                                "name": "name",
-                                                                "type": "text",
-                                                                "label": "Name",
-                                                                "required": true,
-                                                                "validate": {
-                                                                    "max": 64
-                                                                }
-                                                            },
-                                                            {
-                                                                "help": "The function response in JSON object format.",
-                                                                "name": "response",
-                                                                "type": "json",
-                                                                "label": "Response",
-                                                                "required": true
-                                                            }
-                                                        ],
-                                                        "type": "collection",
-                                                        "label": "Function Response"
-                                                    }
-                                                ]
                                             }
                                         ]
                                     },
@@ -348,135 +528,54 @@
                         "required": true
                     },
                     {
-                        "name": "system_instruction",
+                        "name": "responseSchema",
                         "spec": [
                             {
-                                "name": "parts",
-                                "spec": {
-                                    "name": "value",
-                                    "spec": [
-                                        {
-                                            "name": "text",
-                                            "type": "text",
-                                            "label": "Value"
-                                        }
-                                    ],
-                                    "type": "collection",
-                                    "label": "Prompt"
-                                },
-                                "type": "array",
-                                "label": "Prompts"
-                            }
-                        ],
-                        "type": "collection",
-                        "label": "System Instructions"
-                    },
-                    {
-                        "name": "safetySettings",
-                        "spec": [
-                            {
-                                "name": "category",
+                                "name": "type",
                                 "type": "select",
-                                "label": "Category",
+                                "label": "Value Type",
                                 "options": [
                                     {
-                                        "label": "Harassment content",
-                                        "value": "HARM_CATEGORY_HARASSMENT"
+                                        "label": "String",
+                                        "value": "string",
+                                        "nested": "rpc://gemini-ai/1/createResponseSchema?type=string"
                                     },
                                     {
-                                        "label": "Hate speech and content",
-                                        "value": "HARM_CATEGORY_HATE_SPEECH"
+                                        "label": "Enum",
+                                        "value": "enum",
+                                        "nested": "rpc://gemini-ai/1/createResponseSchema?type=enum"
                                     },
                                     {
-                                        "label": "Sexually explicit content.",
-                                        "value": "HARM_CATEGORY_SEXUALLY_EXPLICIT"
+                                        "label": "Number",
+                                        "value": "number",
+                                        "nested": "rpc://gemini-ai/1/createResponseSchema?type=number"
                                     },
                                     {
-                                        "label": "Dangerous content:",
-                                        "value": "HARM_CATEGORY_DANGEROUS_CONTENT"
+                                        "label": "Integer",
+                                        "value": "integer",
+                                        "nested": "rpc://gemini-ai/1/createResponseSchema?type=integer"
+                                    },
+                                    {
+                                        "label": "Boolean",
+                                        "value": "boolean",
+                                        "nested": "rpc://gemini-ai/1/createResponseSchema?type=boolean"
+                                    },
+                                    {
+                                        "label": "Object",
+                                        "value": "object",
+                                        "nested": "rpc://gemini-ai/1/createResponseSchema?type=object"
                                     }
-                                ]
-                            },
-                            {
-                                "name": "threshold",
-                                "type": "select",
-                                "label": "Threshold",
-                                "options": [
-                                    {
-                                        "label": "Block low and above.",
-                                        "value": "BLOCK_LOW_AND_ABOVE"
-                                    },
-                                    {
-                                        "label": "Block medium and above.",
-                                        "value": "BLOCK_MEDIUM_AND_ABOVE"
-                                    },
-                                    {
-                                        "label": "Block only high.",
-                                        "value": "BLOCK_ONLY_HIGH"
-                                    },
-                                    {
-                                        "label": "Block none.",
-                                        "value": "BLOCK_NONE"
-                                    }
-                                ]
+                                ],
+                                "required": true
                             }
                         ],
                         "type": "array",
-                        "label": "Safety Settings"
+                        "label": "Response Schema",
+                        "required": true
                     },
                     {
                         "name": "generationConfig",
                         "spec": [
-                            {
-                                "name": "stopSequences",
-                                "spec": {
-                                    "name": "value",
-                                    "type": "text",
-                                    "label": "Stop Sequence"
-                                },
-                                "type": "array",
-                                "label": "Stop Sequences"
-                            },
-                            {
-                                "name": "responseModalities",
-                                "type": "select",
-                                "label": "Response Modalities",
-                                "multiple": true,
-                                "validate": {
-                                    "enum": [
-                                        "text",
-                                        "image"
-                                    ]
-                                }
-                            },
-                            {
-                                "name": "maxOutputTokens",
-                                "type": "number",
-                                "label": "Max Output Tokens"
-                            },
-                            {
-                                "name": "temperature",
-                                "type": "number",
-                                "label": "Temperature",
-                                "validate": {
-                                    "max": 1,
-                                    "min": 0
-                                }
-                            },
-                            {
-                                "name": "topP",
-                                "type": "number",
-                                "label": "Top P",
-                                "validate": {
-                                    "max": 1,
-                                    "min": 0
-                                }
-                            },
-                            {
-                                "name": "topK",
-                                "type": "number",
-                                "label": "Top K"
-                            },
                             {
                                 "name": "thinkingConfig",
                                 "spec": [
@@ -516,74 +615,10 @@
                                         "media_resolution_high"
                                     ]
                                 }
-                            },
-                            {
-                                "name": "imageConfig",
-                                "spec": [
-                                    {
-                                        "name": "imageSize",
-                                        "type": "select",
-                                        "label": "Image Size",
-                                        "validate": {
-                                            "enum": [
-                                                "1K",
-                                                "2K",
-                                                "4K"
-                                            ]
-                                        }
-                                    }
-                                ],
-                                "type": "collection",
-                                "label": "Image Configuration"
-                            },
-                            {
-                                "name": "responseMimeType",
-                                "type": "select",
-                                "label": "Response Format"
                             }
                         ],
                         "type": "collection",
                         "label": "Generation configurations"
-                    },
-                    {
-                        "name": "tools",
-                        "type": "any",
-                        "label": "Tools"
-                    },
-                    {
-                        "name": "tool_config",
-                        "type": "any",
-                        "label": "Tool Config"
-                    },
-                    {
-                        "name": "function_declarations_context",
-                        "type": "boolean",
-                        "label": "Function Declarations Grounding"
-                    },
-                    {
-                        "name": "url_context",
-                        "type": "boolean",
-                        "label": "URL Context"
-                    },
-                    {
-                        "name": "google_search_context",
-                        "type": "boolean",
-                        "label": "Google Search Grounding"
-                    },
-                    {
-                        "name": "code_execution",
-                        "type": "boolean",
-                        "label": "Code Execution"
-                    },
-                    {
-                        "name": "google_maps_context",
-                        "type": "boolean",
-                        "label": "Google Maps Grounding"
-                    },
-                    {
-                        "name": "file_search_store_context",
-                        "type": "boolean",
-                        "label": "File Search Store Context"
                     }
                 ]
             }
@@ -599,16 +634,16 @@
             },
             "mapper": {
                 "@id": "",
-                "@data": "{{now}}",
-                "@valor": "{{parseNumber(replace(1.valor; \"/[^0-9,.]/g\"; \"\"); \",\")}}",
+                "@data": "{{formatDate(now; \"YYYY-MM-DD HH:mm:ss\"; \"America/Sao_Paulo\")}}",
+                "@valor": "{{7.result.valor}}",
                 "@outros": "",
-                "@categoria": "{{6.candidates[].content.parts[].text}} {{6.result}}",
-                "@descrição": "{{1.descricao}}"
+                "@categoria": "{{7.result.categoria}}",
+                "@descrição": "{{7.result.loja}}"
             },
             "metadata": {
                 "designer": {
-                    "x": 878,
-                    "y": 6
+                    "x": 1057,
+                    "y": -4
                 },
                 "restore": {
                     "parameters": {

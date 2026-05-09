@@ -10,11 +10,12 @@ Este ecossistema utiliza **Inteligência Artificial (Google Gemini API)** para t
 
 O projeto é dividido em dois fluxos principais de automação:
 
-**1. Fluxo de Ingestão e Saneamento (Real-time)**
-* **Captura:** O **MacroDroid** intercepta notificações de gastos no Android, seja por SMS ou pop-up do aplicativo do banco.
-* **Transporte:** Dados enviados via **Webhook** para o **Make.com**.
-* **IA (Saneamento):** O **Google Gemini** analisa a descrição bruta (ex: "Posto Shell") e categoriza automaticamente (ex: "Transporte"), garantindo a integridade e padronização dos dados.
-* **Persistência:** Dados limpos são inseridos em uma tabela **PostgreSQL** hospedada no **Supabase**.
+**1. Fluxo de Ingestão e Saneamento (tempo real)**
+* **Captura:** O **MacroDroid** intercepta notificações de compras no Android.
+* **Transporte:** A notificação é enviada para o **Make.com** por meio de um **webhook**.
+* **Filtragem:** O **Make.com** aplica filtros para descartar notificações que não representam compras reais, evitando processamento indevido e consumo desnecessário de créditos.
+* **IA (extração e categorização):** O **Google Gemini** analisa o texto bruto da notificação e extrai, de forma estruturada, os campos **categoria**, **valor** e **estabelecimento**, além de classificar automaticamente o gasto.
+* **Persistência:** Os dados tratados são gravados em uma tabela **PostgreSQL** hospedada no **Supabase**.
 
 **2. Fluxo de BI e Insights (Monthly)**
 * **Gatilho:** O sistema está configurado para gerar o fechamento mensal automaticamente no primeiro dia do mês subsequente, garantindo que todos os dados do período anterior tenham sido processados.
